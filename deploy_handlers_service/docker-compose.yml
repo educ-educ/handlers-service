@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+
+  service:
+    container_name: handlers_service
+
+    build:
+      context: ../
+      dockerfile: build/docker/service/Dockerfile
+    restart: unless-stopped
+    ports:
+      - ${SERVICE_PORT}:${SERVICE_PORT}
+    depends_on:
+      - db
+    env_file:
+      - .env
+    networks:
+      - handlers_db_network
+      - external_network
+
+
+  db:
+    container_name: handlers_db
+    build:
+      context: ../build/docker/db
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    volumes:
+      - pgs_handlers_volume:/var/lib/postgresql/data
+    ports:
+      - "5440:5432"
+    environment:
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_DB: $POSTGRES_DB
+    networks:
+      - handlers_db_network
+
+volumes:
+  pgs_handlers_volume:
+
+networks:
+  handlers_db_network:
+  external_network:
